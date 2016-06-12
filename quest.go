@@ -1,6 +1,7 @@
 package main
 
 import (
+    "fmt"
     "net/http"
 
     "github.com/gin-gonic/gin"
@@ -19,7 +20,7 @@ func battleHandler(c *gin.Context) {
 // AuthRequired will authorize requests.
 func AuthRequired(c *gin.Context) {
     c.HTML(http.StatusUnauthorized, "error.tmpl", gin.H{})
-    c.Abort() // This is how to stop rendering further if the auth failed
+    c.AbortWithError(http.StatusUnauthorized, fmt.Errorf("You shall not pass!")) // This is how to stop rendering further if the auth failed
 }
 
 func main() {
