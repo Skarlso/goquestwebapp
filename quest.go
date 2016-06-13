@@ -1,7 +1,6 @@
 package main
 
 import (
-    "fmt"
     "encoding/json"
     "io/ioutil"
     "log"
@@ -62,12 +61,6 @@ func init() {
         },
         Endpoint: google.Endpoint,
     }
-}
-
-// AuthRequired will authorize requests.
-func AuthRequired(c *gin.Context) {
-    c.HTML(http.StatusUnauthorized, "error.tmpl", gin.H{})
-    c.AbortWithError(http.StatusUnauthorized, fmt.Errorf("You shall not pass!")) // This is how to stop rendering further if the auth failed
 }
 
 func getLoginURL() string {
