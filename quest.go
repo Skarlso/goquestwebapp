@@ -34,16 +34,6 @@ type User struct {
 var cred Credentials
 var conf *oauth2.Config
 
-func indexHandler(c *gin.Context) {
-    c.HTML(http.StatusOK, "index.tmpl", gin.H{})
-}
-
-func battleHandler(c *gin.Context) {
-    c.HTML(http.StatusOK, "battle.tmpl", gin.H{
-        "user": "Anyad",
-    })
-}
-
 func init() {
     file, err := ioutil.ReadFile("./creds.json")
     if err != nil {
@@ -57,11 +47,22 @@ func init() {
         ClientSecret: cred.Csecret,
         RedirectURL:  "http://127.0.0.1:9090/auth",
         Scopes: []string{
-        "https://www.googleapis.com/auth/userinfo.email", // You have to select your own scope from here -> https://developers.google.com/identity/protocols/googlescopes#google_sign-in
+            "https://www.googleapis.com/auth/userinfo.email", // You have to select your own scope from here -> https://developers.google.com/identity/protocols/googlescopes#google_sign-in
         },
         Endpoint: google.Endpoint,
     }
 }
+
+func indexHandler(c *gin.Context) {
+    c.HTML(http.StatusOK, "index.tmpl", gin.H{})
+}
+
+func battleHandler(c *gin.Context) {
+    c.HTML(http.StatusOK, "battle.tmpl", gin.H{
+        "user": "Anyad",
+    })
+}
+
 
 func getLoginURL() string {
     return conf.AuthCodeURL("")
