@@ -1,0 +1,16 @@
+package: github.com/skarlso/goquestwebapp
+import:
+- package: github.com/Skarlso/goquestwebapp
+  subpackages:
+  - structs
+- package: github.com/fatih/color
+- package: github.com/gin-gonic/contrib
+  subpackages:
+  - sessions
+- package: github.com/gin-gonic/gin
+- package: golang.org/x/oauth2
+  subpackages:
+  - google
+- package: gopkg.in/mgo.v2
+  subpackages:
+  - bson
