@@ -121,6 +121,8 @@ func loginHandler(c *gin.Context) {
 func main() {
 	router := gin.Default()
 	store := sessions.NewCookieStore([]byte("secret"))
+	router.Use(gin.Logger())
+	router.Use(gin.Recovery())
 	router.Use(sessions.Sessions("goquestsession", store))
 	router.Static("/css", "./static/css")
 	router.Static("/img", "./static/img")
@@ -129,6 +131,11 @@ func main() {
 	router.GET("/", indexHandler)
 	router.GET("/login", loginHandler)
 	router.GET("/auth", authHandler)
+
+	// authorized := router.Group("/battle")
+	// authorized.Use() {
+	//
+	// }
 
 	router.Run("127.0.0.1:9090")
 }
