@@ -106,6 +106,12 @@ func authHandler(c *gin.Context) {
 		return
 	}
 	session.Set("user-id", u.Email)
+	err = session.Save()
+	if err != nil {
+		log.Println(err)
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
 	c.HTML(http.StatusOK, "battle.tmpl", gin.H{"email": u.Email})
 }
 
@@ -124,6 +130,7 @@ func fieldHandler(c *gin.Context) {
 	session := sessions.Default(c)
 	userID := session.Get("user-id")
 	log.Println("User found:", userID)
+	c.HTML(http.StatusOK, "field.tmpl", gin.H{"user": userID})
 }
 
 func main() {
@@ -142,7 +149,7 @@ func main() {
 	router.GET("/auth", authHandler)
 
 	authorized := router.Group("/battle")
-	authorized.Use(middleware.AuthenticateRequest())
+	authorized.Use(middleware.AuthorizeRequest())
 	{
 		authorized.GET("/field", fieldHandler)
 	}
