@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/Skarlso/goquestwebapp/middleware"
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/oauth2"
@@ -104,6 +105,7 @@ func authHandler(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
+	session.Set("user-id", u.Email)
 	c.HTML(http.StatusOK, "battle.tmpl", gin.H{"email": u.Email})
 }
 
@@ -118,8 +120,15 @@ func loginHandler(c *gin.Context) {
 	c.HTML(http.StatusOK, "auth.tmpl", gin.H{"link": link})
 }
 
+func fieldHandler(c *gin.Context) {
+	session := sessions.Default(c)
+	userID := session.Get("user-id")
+	log.Println("User found:", userID)
+}
+
 func main() {
 	router := gin.Default()
+	// TODO: Make secret more....secret.
 	store := sessions.NewCookieStore([]byte("secret"))
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
@@ -132,10 +141,11 @@ func main() {
 	router.GET("/login", loginHandler)
 	router.GET("/auth", authHandler)
 
-	// authorized := router.Group("/battle")
-	// authorized.Use() {
-	//
-	// }
+	authorized := router.Group("/battle")
+	authorized.Use(middleware.AuthenticateRequest())
+	{
+		authorized.GET("/field", fieldHandler)
+	}
 
 	router.Run("127.0.0.1:9090")
 }
