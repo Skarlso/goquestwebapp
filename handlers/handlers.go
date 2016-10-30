@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/Skarlso/goquestwebapp/database"
+	"github.com/Skarlso/goquestwebapp/structs"
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/oauth2"
@@ -22,19 +24,6 @@ var conf *oauth2.Config
 type Credentials struct {
 	Cid     string `json:"cid"`
 	Csecret string `json:"csecret"`
-}
-
-// User is a retrieved and authentiacted user.
-type User struct {
-	Sub           string `json:"sub"`
-	Name          string `json:"name"`
-	GivenName     string `json:"given_name"`
-	FamilyName    string `json:"family_name"`
-	Profile       string `json:"profile"`
-	Picture       string `json:"picture"`
-	Email         string `json:"email"`
-	EmailVerified bool   `json:"email_verified"`
-	Gender        string `json:"gender"`
 }
 
 func randToken() string {
@@ -66,10 +55,12 @@ func init() {
 	}
 }
 
+// IndexHandler handels /.
 func IndexHandler(c *gin.Context) {
 	c.HTML(http.StatusOK, "index.tmpl", gin.H{})
 }
 
+// AuthHandler handles authentication of a user and initiates a session.
 func AuthHandler(c *gin.Context) {
 	// Handle the exchange code to initiate a transport.
 	session := sessions.Default(c)
@@ -89,15 +80,15 @@ func AuthHandler(c *gin.Context) {
 	}
 
 	client := conf.Client(oauth2.NoContext, tok)
-	email, err := client.Get("https://www.googleapis.com/oauth2/v3/userinfo")
+	userinfo, err := client.Get("https://www.googleapis.com/oauth2/v3/userinfo")
 	if err != nil {
 		log.Println(err)
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	defer email.Body.Close()
-	data, _ := ioutil.ReadAll(email.Body)
-	u := User{}
+	defer userinfo.Body.Close()
+	data, _ := ioutil.ReadAll(userinfo.Body)
+	u := structs.User{}
 	if err = json.Unmarshal(data, &u); err != nil {
 		log.Println(err)
 		c.AbortWithStatus(http.StatusBadRequest)
@@ -110,9 +101,22 @@ func AuthHandler(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	c.HTML(http.StatusOK, "battle.tmpl", gin.H{"email": u.Email})
+	seen := false
+	db := database.MongoDBConnection{}
+	if _, mongoErr := db.LoadUser(u.Email); mongoErr == nil {
+		seen = true
+	} else {
+		err = db.SaveUser(&u)
+		if err != nil {
+			log.Println(err)
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+	}
+	c.HTML(http.StatusOK, "battle.tmpl", gin.H{"email": u.Email, "seen": seen})
 }
 
+// LoginHandler handles the login procedure.
 func LoginHandler(c *gin.Context) {
 	state := randToken()
 	session := sessions.Default(c)
@@ -120,13 +124,12 @@ func LoginHandler(c *gin.Context) {
 	log.Printf("Stored session: %v\n", state)
 	session.Save()
 	link := getLoginURL(state)
-	log.Printf("Link: %v\n", link)
 	c.HTML(http.StatusOK, "auth.tmpl", gin.H{"link": link})
 }
 
+// FieldHandler is a rudementary handler for logged in users.
 func FieldHandler(c *gin.Context) {
 	session := sessions.Default(c)
 	userID := session.Get("user-id")
-	log.Println("User found:", userID)
 	c.HTML(http.StatusOK, "field.tmpl", gin.H{"user": userID})
 }
