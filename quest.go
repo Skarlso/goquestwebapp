@@ -9,8 +9,11 @@ import (
 
 func main() {
 	router := gin.Default()
-	// TODO: Make secret more....secret.
-	store := sessions.NewCookieStore([]byte("secret"))
+	store := sessions.NewCookieStore([]byte(handlers.RandToken(64)))
+	store.Options(sessions.Options{
+		Path:   "/",
+		MaxAge: 86400 * 7,
+	})
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 	router.Use(sessions.Sessions("goquestsession", store))

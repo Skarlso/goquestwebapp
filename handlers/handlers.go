@@ -26,8 +26,9 @@ type Credentials struct {
 	Csecret string `json:"csecret"`
 }
 
-func randToken() string {
-	b := make([]byte, 32)
+// RandToken generates a random @l length token.
+func RandToken(l int) string {
+	b := make([]byte, l)
 	rand.Read(b)
 	return base64.StdEncoding.EncodeToString(b)
 }
@@ -118,7 +119,7 @@ func AuthHandler(c *gin.Context) {
 
 // LoginHandler handles the login procedure.
 func LoginHandler(c *gin.Context) {
-	state := randToken()
+	state := RandToken(32)
 	session := sessions.Default(c)
 	session.Set("state", state)
 	log.Printf("Stored session: %v\n", state)
