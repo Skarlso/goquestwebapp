@@ -4,7 +4,7 @@ Web based version of [GoProgressQuest](https://github.com/Skarlso/goprogressques
 
 # Installation
 
-Simply `go get github.com/Skarlso/goquestwebapp`
+Simply `go get github.com/Skarlso/goquestwebapp`.
 
 # Setup
 
