@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// AuthorizeRequest is used to authenticate a request for a certain end-point group.
+// AuthorizeRequest is used to authorize a request for a certain end-point group.
 func AuthorizeRequest() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		session := sessions.Default(c)
