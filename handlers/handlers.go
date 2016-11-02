@@ -69,14 +69,14 @@ func AuthHandler(c *gin.Context) {
 	queryState := c.Request.URL.Query().Get("state")
 	if retrievedState != queryState {
 		log.Printf("Invalid session state: retrieved: %s; Param: %s", retrievedState, queryState)
-		c.AbortWithStatus(http.StatusUnauthorized)
+		c.HTML(http.StatusUnauthorized, "error.tmpl", gin.H{"message": "Invalid session state."})
 		return
 	}
 	code := c.Request.URL.Query().Get("code")
 	tok, err := conf.Exchange(oauth2.NoContext, code)
 	if err != nil {
 		log.Println(err)
-		c.AbortWithStatus(http.StatusBadRequest)
+		c.HTML(http.StatusBadRequest, "error.tmpl", gin.H{"message": "Login failed. Please try again."})
 		return
 	}
 
@@ -92,14 +92,14 @@ func AuthHandler(c *gin.Context) {
 	u := structs.User{}
 	if err = json.Unmarshal(data, &u); err != nil {
 		log.Println(err)
-		c.AbortWithStatus(http.StatusBadRequest)
+		c.HTML(http.StatusBadRequest, "error.tmpl", gin.H{"message": "Error marshalling response. Please try agian."})
 		return
 	}
 	session.Set("user-id", u.Email)
 	err = session.Save()
 	if err != nil {
 		log.Println(err)
-		c.AbortWithStatus(http.StatusBadRequest)
+		c.HTML(http.StatusBadRequest, "error.tmpl", gin.H{"message": "Error while saving session. Please try again."})
 		return
 	}
 	seen := false
@@ -110,7 +110,7 @@ func AuthHandler(c *gin.Context) {
 		err = db.SaveUser(&u)
 		if err != nil {
 			log.Println(err)
-			c.AbortWithStatus(http.StatusBadRequest)
+			c.HTML(http.StatusBadRequest, "error.tmpl", gin.H{"message": "Error while saving user. Please try again."})
 			return
 		}
 	}
