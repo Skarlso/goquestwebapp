@@ -2,9 +2,10 @@ package database
 
 import (
 	"database/sql"
+	"log"
+
 	// Database driver
 	_ "github.com/mattn/go-sqlite3"
-	"log"
 
 	"github.com/Skarlso/goquestwebapp/structs"
 )
